@@ -1,2 +1,2 @@
 # nio-demo
-nio demo with Java
+Project for learning the source code of Java NIO.
