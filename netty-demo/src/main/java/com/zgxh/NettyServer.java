@@ -13,27 +13,27 @@ import io.netty.handler.codec.string.StringDecoder;
  * @author Yu Yang
  */
 public class NettyServer {
+
     public static void main(String[] args) {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
 
-        NioEventLoopGroup boos = new NioEventLoopGroup();
+        NioEventLoopGroup boss = new NioEventLoopGroup();
         NioEventLoopGroup worker = new NioEventLoopGroup();
-        serverBootstrap
-                .group(boos, worker)
-                .channel(NioServerSocketChannel.class) // 指定io模型
+
+        serverBootstrap.group(boss, worker)
+                .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
-                    protected void initChannel(NioSocketChannel ch) {
-                        ch.pipeline().addLast(new StringDecoder());
-                        ch.pipeline().addLast(new SimpleChannelInboundHandler<String>() {
+                    @Override
+                    protected void initChannel(NioSocketChannel nioSocketChannel) throws Exception {
+                        nioSocketChannel.pipeline().addLast(new StringDecoder());
+                        nioSocketChannel.pipeline().addLast(new SimpleChannelInboundHandler<String>() {
                             @Override
-                            protected void channelRead0(ChannelHandlerContext ctx, String msg) {
+                            protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
                                 System.out.println(msg);
                             }
                         });
                     }
                 })
                 .bind(8000);
-        System.out.println("Server started!");
     }
 }
-

@@ -2,10 +2,10 @@ package com.zgxh;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 import java.util.Date;
@@ -14,6 +14,10 @@ import java.util.Date;
  * @author Yu Yang
  */
 public class NettyClient {
+
+    private static final String IP = "127.0.0.1";
+    private static final int PORT = 8000;
+
     public static void main(String[] args) throws InterruptedException {
         Bootstrap bootstrap = new Bootstrap();
         NioEventLoopGroup group = new NioEventLoopGroup();
@@ -27,12 +31,22 @@ public class NettyClient {
                     }
                 });
 
-        Channel channel = bootstrap.connect("127.0.0.1", 8000).channel();
-        System.out.println("Client started!");
+        bootstrap.connect(IP, PORT).addListener(future -> doListen(bootstrap, (ChannelFuture) future));
+    }
 
-        while (true) {
-            channel.writeAndFlush(new Date() + ": hello world!");
+    /**
+     * 失败重连
+     * @param bootstrap
+     * @param future
+     * @throws InterruptedException
+     */
+    private static void doListen(Bootstrap bootstrap, ChannelFuture future) throws InterruptedException {
+        if (future.isSuccess()) {
+            System.out.println("连接成功!");
+        } else {
+            System.out.println("连接失败，正在重试");
             Thread.sleep(2000);
+            bootstrap.connect(IP, PORT).addListener(future1 -> doListen(bootstrap, (ChannelFuture) future1));
         }
     }
 }
